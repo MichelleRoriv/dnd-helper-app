@@ -16,6 +16,8 @@ const defaultCharacter = {
 const elements = {
   xpDisplay: document.getElementById("xpDisplay"),
   levelDisplay: document.getElementById("levelDisplay"),
+  progressDisplay: document.getElementById("progressDisplay"),
+  progressFill: document.getElementById("progressFill"),
   xpInput: document.getElementById("xpInput"),
   addXpButton: document.getElementById("addXpButton")
 };
@@ -76,9 +78,31 @@ function getLevelFromXp(xp) {
   return 1;
 }
 
+function getNextLevelXp(level) {
+  // En nivel maximo no existe un siguiente umbral, asi que se usa el tope final.
+  if (level >= XP_THRESHOLDS.length) {
+    return XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
+  }
+
+  return XP_THRESHOLDS[level];
+}
+
+function getProgressPercent(xp, requiredXp) {
+  if (requiredXp <= 0) {
+    return 0;
+  }
+
+  return Math.min((xp / requiredXp) * 100, 100);
+}
+
 function updateDisplay() {
+  const requiredXp = getNextLevelXp(character.level);
+  const progressPercent = getProgressPercent(character.xp, requiredXp);
+
   elements.xpDisplay.textContent = `XP: ${character.xp}`;
   elements.levelDisplay.textContent = `Nivel: ${character.level}`;
+  elements.progressDisplay.textContent = `${character.xp} / ${requiredXp} XP`;
+  elements.progressFill.style.width = `${progressPercent}%`;
 }
 
 function addXP() {
