@@ -2,6 +2,8 @@ const CHARACTER_STORAGE_KEY = "dnd-helper.character";
 const LEGACY_XP_STORAGE_KEY = "xp";
 const LEVEL_UP_MESSAGE_DURATION_MS = 3000;
 const LEVEL_UP_MESSAGE_ANIMATION_MS = 250;
+// Cantidad maxima de acciones de XP que se pueden deshacer.
+const XP_UNDO_LIMIT = 3;
 
 // Tabla oficial de XP de D&D 5e. La posición del umbral determina el nivel.
 const XP_THRESHOLDS = [
@@ -22,11 +24,14 @@ const elements = {
   progressFill: document.getElementById("progressFill"),
   levelUpMessage: document.getElementById("levelUpMessage"),
   xpInput: document.getElementById("xpInput"),
-  addXpButton: document.getElementById("addXpButton")
+  addXpButton: document.getElementById("addXpButton"),
+  undoXpButton: document.getElementById("undoXpButton")
 };
 
 // Estado principal en memoria. Cada cambio relevante se guarda en localStorage.
 let character = loadCharacter();
+// Historial temporal para corregir errores durante la sesion actual.
+let xpUndoHistory = [];
 let levelUpMessageTimeoutId = null;
 let levelUpMessageClearTimeoutId = null;
 
@@ -108,6 +113,20 @@ function updateDisplay() {
   elements.levelDisplay.textContent = `Nivel: ${character.level}`;
   elements.progressDisplay.textContent = `${character.xp} / ${requiredXp} XP`;
   elements.progressFill.style.width = `${progressPercent}%`;
+  updateUndoButton();
+}
+
+function updateUndoButton() {
+  elements.undoXpButton.disabled = xpUndoHistory.length === 0;
+}
+
+function saveXpSnapshotForUndo() {
+  xpUndoHistory.push(character.xp);
+
+  // El limite configurable evita que el historial crezca mas de lo necesario.
+  if (xpUndoHistory.length > XP_UNDO_LIMIT) {
+    xpUndoHistory.shift();
+  }
 }
 
 function showLevelUpMessage(level) {
@@ -154,6 +173,8 @@ function addXP() {
   const newXp = character.xp + xpToAdd;
   const newLevel = getLevelFromXp(newXp);
 
+  saveXpSnapshotForUndo();
+
   character = {
     xp: newXp,
     level: newLevel
@@ -172,6 +193,23 @@ function addXP() {
   elements.xpInput.value = "";
 }
 
+function undoXP() {
+  if (xpUndoHistory.length === 0) {
+    return;
+  }
+
+  const restoredXp = xpUndoHistory.pop();
+
+  character = {
+    xp: restoredXp,
+    level: getLevelFromXp(restoredXp)
+  };
+
+  clearLevelUpMessage();
+  saveCharacter();
+  updateDisplay();
+}
+
 function handleXpInputKeydown(event) {
   if (event.key === "Enter") {
     addXP();
@@ -180,6 +218,7 @@ function handleXpInputKeydown(event) {
 
 elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
+elements.undoXpButton.addEventListener("click", undoXP);
 
 saveCharacter();
 updateDisplay();
