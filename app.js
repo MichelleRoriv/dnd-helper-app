@@ -1,5 +1,7 @@
 const CHARACTER_STORAGE_KEY = "dnd-helper.character";
 const LEGACY_XP_STORAGE_KEY = "xp";
+const LEVEL_UP_MESSAGE_DURATION_MS = 3000;
+const LEVEL_UP_MESSAGE_ANIMATION_MS = 250;
 
 // Tabla oficial de XP de D&D 5e. La posición del umbral determina el nivel.
 const XP_THRESHOLDS = [
@@ -18,12 +20,15 @@ const elements = {
   levelDisplay: document.getElementById("levelDisplay"),
   progressDisplay: document.getElementById("progressDisplay"),
   progressFill: document.getElementById("progressFill"),
+  levelUpMessage: document.getElementById("levelUpMessage"),
   xpInput: document.getElementById("xpInput"),
   addXpButton: document.getElementById("addXpButton")
 };
 
 // Estado principal en memoria. Cada cambio relevante se guarda en localStorage.
 let character = loadCharacter();
+let levelUpMessageTimeoutId = null;
+let levelUpMessageClearTimeoutId = null;
 
 function loadCharacter() {
   const storedCharacter = localStorage.getItem(CHARACTER_STORAGE_KEY);
@@ -105,6 +110,38 @@ function updateDisplay() {
   elements.progressFill.style.width = `${progressPercent}%`;
 }
 
+function showLevelUpMessage(level) {
+  if (levelUpMessageTimeoutId) {
+    clearTimeout(levelUpMessageTimeoutId);
+  }
+
+  if (levelUpMessageClearTimeoutId) {
+    clearTimeout(levelUpMessageClearTimeoutId);
+    levelUpMessageClearTimeoutId = null;
+  }
+
+  elements.levelUpMessage.textContent = `Subiste al nivel ${level}!`;
+  elements.levelUpMessage.classList.remove("isHidden");
+
+  // La duracion del snackbar se controla desde LEVEL_UP_MESSAGE_DURATION_MS.
+  levelUpMessageTimeoutId = setTimeout(clearLevelUpMessage, LEVEL_UP_MESSAGE_DURATION_MS);
+}
+
+function clearLevelUpMessage() {
+  if (levelUpMessageTimeoutId) {
+    clearTimeout(levelUpMessageTimeoutId);
+    levelUpMessageTimeoutId = null;
+  }
+
+  elements.levelUpMessage.classList.add("isHidden");
+
+  // Se borra el texto despues del fade-out para que la salida no se corte.
+  levelUpMessageClearTimeoutId = setTimeout(() => {
+    elements.levelUpMessage.textContent = "";
+    levelUpMessageClearTimeoutId = null;
+  }, LEVEL_UP_MESSAGE_ANIMATION_MS);
+}
+
 function addXP() {
   const xpToAdd = normalizeXp(elements.xpInput.value);
 
@@ -113,17 +150,35 @@ function addXP() {
     return;
   }
 
+  const previousLevel = character.level;
+  const newXp = character.xp + xpToAdd;
+  const newLevel = getLevelFromXp(newXp);
+
   character = {
-    xp: character.xp + xpToAdd,
-    level: getLevelFromXp(character.xp + xpToAdd)
+    xp: newXp,
+    level: newLevel
   };
 
   saveCharacter();
   updateDisplay();
 
+  // El mensaje solo aparece cuando la nueva XP cruza al menos un umbral de nivel.
+  if (newLevel > previousLevel) {
+    showLevelUpMessage(newLevel);
+  } else {
+    clearLevelUpMessage();
+  }
+
   elements.xpInput.value = "";
 }
 
+function handleXpInputKeydown(event) {
+  if (event.key === "Enter") {
+    addXP();
+  }
+}
+
+elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 
 saveCharacter();
