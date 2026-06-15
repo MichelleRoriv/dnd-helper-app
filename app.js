@@ -1,4 +1,5 @@
 const CHARACTER_STORAGE_KEY = "dnd-helper.character";
+const SESSIONS_STORAGE_KEY = "dnd-helper.sessions";
 const LEGACY_XP_STORAGE_KEY = "xp";
 const LEVEL_UP_MESSAGE_DURATION_MS = 3000;
 const LEVEL_UP_MESSAGE_ANIMATION_MS = 250;
@@ -28,11 +29,15 @@ const elements = {
   levelUpMessage: document.getElementById("levelUpMessage"),
   xpInput: document.getElementById("xpInput"),
   addXpButton: document.getElementById("addXpButton"),
-  undoXpButton: document.getElementById("undoXpButton")
+  undoXpButton: document.getElementById("undoXpButton"),
+  sessionNotes: document.getElementById("sessionNotes"),
+  saveSessionButton: document.getElementById("saveSessionButton"),
+  sessionStatus: document.getElementById("sessionStatus")
 };
 
 // Estado principal en memoria. Cada cambio relevante se guarda en localStorage.
 let character = loadCharacter();
+let sessions = loadSessions();
 // Historial temporal para corregir errores durante la sesion actual.
 let xpUndoHistory = [];
 let levelUpMessageTimeoutId = null;
@@ -67,6 +72,33 @@ function loadCharacter() {
 
 function saveCharacter() {
   localStorage.setItem(CHARACTER_STORAGE_KEY, JSON.stringify(character));
+}
+
+function loadSessions() {
+  const storedSessions = localStorage.getItem(SESSIONS_STORAGE_KEY);
+
+  if (!storedSessions) {
+    return [];
+  }
+
+  try {
+    const parsedSessions = JSON.parse(storedSessions);
+    return Array.isArray(parsedSessions) ? parsedSessions : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveSessions() {
+  localStorage.setItem(SESSIONS_STORAGE_KEY, JSON.stringify(sessions));
+}
+
+function createSession(notes) {
+  return {
+    id: `session-${Date.now()}`,
+    date: new Date().toISOString(),
+    notes
+  };
 }
 
 // Convierte cualquier entrada a una XP valida para evitar NaN o valores negativos.
@@ -148,6 +180,10 @@ function updateAddXpButton() {
   elements.addXpButton.disabled = !isValidXpInput(elements.xpInput.value);
 }
 
+function updateSaveSessionButton() {
+  elements.saveSessionButton.disabled = elements.sessionNotes.value.length === 0;
+}
+
 function handleXpInputChange() {
   const sanitizedValue = elements.xpInput.value.replace(/\D/g, "").slice(0, XP_INPUT_MAX_DIGITS);
 
@@ -156,6 +192,28 @@ function handleXpInputChange() {
   }
 
   updateAddXpButton();
+}
+
+function handleSessionNotesInput() {
+  updateSaveSessionButton();
+  elements.sessionStatus.textContent = "";
+}
+
+function saveSession() {
+  const notes = elements.sessionNotes.value;
+
+  if (notes.length === 0) {
+    return;
+  }
+
+  // No se usa trim para guardar exactamente el texto ingresado por el usuario.
+  const session = createSession(notes);
+  sessions.push(session);
+  saveSessions();
+
+  elements.sessionNotes.value = "";
+  elements.sessionStatus.textContent = "Sesion guardada.";
+  updateSaveSessionButton();
 }
 
 function showLevelUpMessage(level) {
@@ -250,7 +308,10 @@ elements.xpInput.addEventListener("input", handleXpInputChange);
 elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
+elements.sessionNotes.addEventListener("input", handleSessionNotesInput);
+elements.saveSessionButton.addEventListener("click", saveSession);
 
 saveCharacter();
 updateDisplay();
 updateAddXpButton();
+updateSaveSessionButton();
