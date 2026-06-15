@@ -6,6 +6,7 @@ const LEVEL_UP_MESSAGE_ANIMATION_MS = 250;
 // Cantidad maxima de acciones de XP que se pueden deshacer.
 const XP_UNDO_LIMIT = 3;
 const XP_INPUT_MAX_DIGITS = 6;
+const SESSION_SUMMARY_MAX_LENGTH = 80;
 
 // Tabla oficial de XP de D&D 5e. La posición del umbral determina el nivel.
 const XP_THRESHOLDS = [
@@ -32,7 +33,9 @@ const elements = {
   undoXpButton: document.getElementById("undoXpButton"),
   sessionNotes: document.getElementById("sessionNotes"),
   saveSessionButton: document.getElementById("saveSessionButton"),
-  sessionStatus: document.getElementById("sessionStatus")
+  sessionStatus: document.getElementById("sessionStatus"),
+  sessionList: document.getElementById("sessionList"),
+  sessionDetail: document.getElementById("sessionDetail")
 };
 
 // Estado principal en memoria. Cada cambio relevante se guarda en localStorage.
@@ -99,6 +102,70 @@ function createSession(notes) {
     date: new Date().toISOString(),
     notes
   };
+}
+
+function getSessionsSortedByNewest() {
+  // Se ordena una copia para no alterar el orden original guardado en memoria.
+  return [...sessions].sort((firstSession, secondSession) => {
+    return new Date(secondSession.date).getTime() - new Date(firstSession.date).getTime();
+  });
+}
+
+function formatSessionDate(date) {
+  return new Date(date).toLocaleString();
+}
+
+function getSessionSummary(notes) {
+  // El resumen muestra solo los primeros caracteres, sin modificar la nota completa guardada.
+  if (notes.length <= SESSION_SUMMARY_MAX_LENGTH) {
+    return notes;
+  }
+
+  return `${notes.slice(0, SESSION_SUMMARY_MAX_LENGTH)}...`;
+}
+
+function renderSessionList() {
+  const sortedSessions = getSessionsSortedByNewest();
+  elements.sessionList.replaceChildren();
+
+  if (sortedSessions.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "sessionEmpty";
+    emptyItem.textContent = "Todavia no hay sesiones guardadas.";
+    elements.sessionList.appendChild(emptyItem);
+    return;
+  }
+
+  sortedSessions.forEach((session) => {
+    const item = document.createElement("li");
+    const button = document.createElement("button");
+    const date = document.createElement("span");
+    const summary = document.createElement("span");
+
+    button.type = "button";
+    button.className = "sessionItem";
+    button.dataset.sessionId = session.id;
+
+    date.className = "sessionDate";
+    date.textContent = formatSessionDate(session.date);
+
+    summary.className = "sessionSummary";
+    summary.textContent = getSessionSummary(session.notes);
+
+    button.append(date, summary);
+    item.appendChild(button);
+    elements.sessionList.appendChild(item);
+  });
+}
+
+function showSessionDetail(sessionId) {
+  const selectedSession = sessions.find((session) => session.id === sessionId);
+
+  if (!selectedSession) {
+    return;
+  }
+
+  elements.sessionDetail.textContent = selectedSession.notes;
 }
 
 // Convierte cualquier entrada a una XP valida para evitar NaN o valores negativos.
@@ -181,7 +248,7 @@ function updateAddXpButton() {
 }
 
 function updateSaveSessionButton() {
-  elements.saveSessionButton.disabled = elements.sessionNotes.value.length === 0;
+  elements.saveSessionButton.disabled = elements.sessionNotes.value.trim().length === 0;
 }
 
 function handleXpInputChange() {
@@ -200,13 +267,13 @@ function handleSessionNotesInput() {
 }
 
 function saveSession() {
-  const notes = elements.sessionNotes.value;
+  const notes = elements.sessionNotes.value.trim();
 
   if (notes.length === 0) {
     return;
   }
 
-  // No se usa trim para guardar exactamente el texto ingresado por el usuario.
+  // Se guarda la nota recortada para evitar espacios accidentales al inicio o final.
   const session = createSession(notes);
   sessions.push(session);
   saveSessions();
@@ -214,6 +281,8 @@ function saveSession() {
   elements.sessionNotes.value = "";
   elements.sessionStatus.textContent = "Sesion guardada.";
   updateSaveSessionButton();
+  renderSessionList();
+  showSessionDetail(session.id);
 }
 
 function showLevelUpMessage(level) {
@@ -304,14 +373,26 @@ function handleXpInputKeydown(event) {
   }
 }
 
+function handleSessionListClick(event) {
+  const selectedButton = event.target.closest("[data-session-id]");
+
+  if (!selectedButton) {
+    return;
+  }
+
+  showSessionDetail(selectedButton.dataset.sessionId);
+}
+
 elements.xpInput.addEventListener("input", handleXpInputChange);
 elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
 elements.sessionNotes.addEventListener("input", handleSessionNotesInput);
 elements.saveSessionButton.addEventListener("click", saveSession);
+elements.sessionList.addEventListener("click", handleSessionListClick);
 
 saveCharacter();
 updateDisplay();
 updateAddXpButton();
 updateSaveSessionButton();
+renderSessionList();
