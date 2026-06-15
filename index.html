@@ -12,9 +12,18 @@
     <h1>XP Tracker</h1>
 
     <p id="xpDisplay">XP: 0</p>
+    <p id="levelDisplay">Nivel: 1</p>
 
-    <input type="number" id="xpInput" placeholder="Agregar XP">
-    <button onclick="addXP()">Agregar</button>
+    <div class="progressBar" aria-label="Progreso hacia el siguiente nivel">
+      <div id="progressFill" class="progressFill"></div>
+      <span id="progressDisplay" class="progressText">0 / 300 XP</span>
+    </div>
+
+    <p id="levelUpMessage" class="levelUpMessage isHidden" aria-live="polite"></p>
+
+    <input type="text" id="xpInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Agregar XP">
+    <button id="addXpButton" disabled>Agregar</button>
+    <button id="undoXpButton" type="button" disabled>Deshacer</button>
 
   </div>
 
