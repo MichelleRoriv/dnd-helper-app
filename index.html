@@ -21,8 +21,8 @@
 
     <p id="levelUpMessage" class="levelUpMessage isHidden" aria-live="polite"></p>
 
-    <input type="number" id="xpInput" placeholder="Agregar XP">
-    <button id="addXpButton">Agregar</button>
+    <input type="text" id="xpInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Agregar XP">
+    <button id="addXpButton" disabled>Agregar</button>
     <button id="undoXpButton" type="button" disabled>Deshacer</button>
 
   </div>

@@ -4,6 +4,7 @@ const LEVEL_UP_MESSAGE_DURATION_MS = 3000;
 const LEVEL_UP_MESSAGE_ANIMATION_MS = 250;
 // Cantidad maxima de acciones de XP que se pueden deshacer.
 const XP_UNDO_LIMIT = 3;
+const XP_INPUT_MAX_DIGITS = 6;
 
 // Tabla oficial de XP de D&D 5e. La posición del umbral determina el nivel.
 const XP_THRESHOLDS = [
@@ -11,6 +12,8 @@ const XP_THRESHOLDS = [
   85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000,
   305000, 355000
 ];
+
+const XP_MAX_TOTAL = XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
 
 const defaultCharacter = {
   xp: 0,
@@ -74,7 +77,7 @@ function normalizeXp(value) {
     return 0;
   }
 
-  return Math.trunc(xp);
+  return Math.min(Math.trunc(xp), XP_MAX_TOTAL);
 }
 
 function getLevelFromXp(xp) {
@@ -114,6 +117,7 @@ function updateDisplay() {
   elements.progressDisplay.textContent = `${character.xp} / ${requiredXp} XP`;
   elements.progressFill.style.width = `${progressPercent}%`;
   updateUndoButton();
+  updateAddXpButton();
 }
 
 function updateUndoButton() {
@@ -127,6 +131,31 @@ function saveXpSnapshotForUndo() {
   if (xpUndoHistory.length > XP_UNDO_LIMIT) {
     xpUndoHistory.shift();
   }
+}
+
+function isValidXpInput(value) {
+  const trimmedValue = value.trim();
+  const xpToAdd = Number(trimmedValue);
+
+  // Acepta enteros positivos de maximo 6 digitos mientras todavia se pueda ganar XP.
+  return /^\d+$/.test(trimmedValue)
+    && trimmedValue.length <= XP_INPUT_MAX_DIGITS
+    && xpToAdd > 0
+    && character.xp < XP_MAX_TOTAL;
+}
+
+function updateAddXpButton() {
+  elements.addXpButton.disabled = !isValidXpInput(elements.xpInput.value);
+}
+
+function handleXpInputChange() {
+  const sanitizedValue = elements.xpInput.value.replace(/\D/g, "").slice(0, XP_INPUT_MAX_DIGITS);
+
+  if (elements.xpInput.value !== sanitizedValue) {
+    elements.xpInput.value = sanitizedValue;
+  }
+
+  updateAddXpButton();
 }
 
 function showLevelUpMessage(level) {
@@ -162,15 +191,15 @@ function clearLevelUpMessage() {
 }
 
 function addXP() {
-  const xpToAdd = normalizeXp(elements.xpInput.value);
-
-  // Ignora entradas vacias, cero o invalidas para no crear cambios accidentales.
-  if (xpToAdd <= 0) {
+  // Protege tambien el flujo por teclado, no solo el estado visual del boton.
+  if (!isValidXpInput(elements.xpInput.value)) {
     return;
   }
 
+  const xpToAdd = Number(elements.xpInput.value);
   const previousLevel = character.level;
-  const newXp = character.xp + xpToAdd;
+  // Si el usuario ingresa mas XP de la necesaria, se limita al maximo de la tabla.
+  const newXp = Math.min(character.xp + xpToAdd, XP_MAX_TOTAL);
   const newLevel = getLevelFromXp(newXp);
 
   saveXpSnapshotForUndo();
@@ -191,6 +220,7 @@ function addXP() {
   }
 
   elements.xpInput.value = "";
+  updateAddXpButton();
 }
 
 function undoXP() {
@@ -216,9 +246,11 @@ function handleXpInputKeydown(event) {
   }
 }
 
+elements.xpInput.addEventListener("input", handleXpInputChange);
 elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
 
 saveCharacter();
 updateDisplay();
+updateAddXpButton();
