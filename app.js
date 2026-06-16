@@ -18,11 +18,17 @@ const XP_THRESHOLDS = [
 const XP_MAX_TOTAL = XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
 
 const defaultCharacter = {
+  name: "",
+  species: "",
+  characterClass: "",
   xp: 0,
   level: 1
 };
 
 const elements = {
+  characterNameInput: document.getElementById("characterNameInput"),
+  characterSpeciesInput: document.getElementById("characterSpeciesInput"),
+  characterClassInput: document.getElementById("characterClassInput"),
   xpDisplay: document.getElementById("xpDisplay"),
   levelDisplay: document.getElementById("levelDisplay"),
   progressDisplay: document.getElementById("progressDisplay"),
@@ -58,6 +64,9 @@ function loadCharacter() {
 
       // El nivel se recalcula desde la XP para evitar datos guardados inconsistentes.
       return {
+        name: normalizeText(parsedCharacter.name),
+        species: normalizeText(parsedCharacter.species),
+        characterClass: normalizeText(parsedCharacter.characterClass),
         xp,
         level: getLevelFromXp(xp)
       };
@@ -70,6 +79,7 @@ function loadCharacter() {
   const legacyXp = normalizeXp(localStorage.getItem(LEGACY_XP_STORAGE_KEY));
 
   return {
+    ...defaultCharacter,
     xp: legacyXp,
     level: getLevelFromXp(legacyXp)
   };
@@ -104,6 +114,10 @@ function createSession(notes) {
     date: new Date().toISOString(),
     notes
   };
+}
+
+function normalizeText(value) {
+  return typeof value === "string" ? value : "";
 }
 
 function getSessionsSortedByNewest() {
@@ -263,9 +277,27 @@ function handleXpInputChange() {
   updateAddXpButton();
 }
 
+function updateCharacterProfileInputs() {
+  elements.characterNameInput.value = character.name;
+  elements.characterSpeciesInput.value = character.species;
+  elements.characterClassInput.value = character.characterClass;
+}
+
 function handleSessionNotesInput() {
   updateSaveSessionButton();
   elements.sessionStatus.textContent = "";
+}
+
+function handleCharacterProfileInput() {
+  character = {
+    ...character,
+    name: elements.characterNameInput.value.trim(),
+    species: elements.characterSpeciesInput.value.trim(),
+    characterClass: elements.characterClassInput.value.trim()
+  };
+
+  // Los datos basicos se guardan automaticamente para evitar pasos extra.
+  saveCharacter();
 }
 
 function openSessionComposer() {
@@ -402,11 +434,15 @@ elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
 elements.newSessionButton.addEventListener("click", openSessionComposer);
+elements.characterNameInput.addEventListener("input", handleCharacterProfileInput);
+elements.characterSpeciesInput.addEventListener("input", handleCharacterProfileInput);
+elements.characterClassInput.addEventListener("input", handleCharacterProfileInput);
 elements.sessionNotes.addEventListener("input", handleSessionNotesInput);
 elements.saveSessionButton.addEventListener("click", saveSession);
 elements.sessionList.addEventListener("click", handleSessionListClick);
 
 saveCharacter();
+updateCharacterProfileInputs();
 updateDisplay();
 updateAddXpButton();
 updateSaveSessionButton();
