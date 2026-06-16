@@ -31,6 +31,8 @@ const elements = {
   xpInput: document.getElementById("xpInput"),
   addXpButton: document.getElementById("addXpButton"),
   undoXpButton: document.getElementById("undoXpButton"),
+  newSessionButton: document.getElementById("newSessionButton"),
+  sessionComposer: document.getElementById("sessionComposer"),
   sessionNotes: document.getElementById("sessionNotes"),
   saveSessionButton: document.getElementById("saveSessionButton"),
   sessionStatus: document.getElementById("sessionStatus"),
@@ -266,6 +268,16 @@ function handleSessionNotesInput() {
   elements.sessionStatus.textContent = "";
 }
 
+function openSessionComposer() {
+  elements.sessionComposer.hidden = false;
+  elements.sessionStatus.textContent = "";
+  elements.sessionNotes.focus();
+}
+
+function closeSessionComposer() {
+  elements.sessionComposer.hidden = true;
+}
+
 function saveSession() {
   const notes = elements.sessionNotes.value.trim();
 
@@ -283,6 +295,8 @@ function saveSession() {
   updateSaveSessionButton();
   renderSessionList();
   showSessionDetail(session.id);
+  // Despues de guardar se vuelve al Home compacto para uso rapido en sesion.
+  closeSessionComposer();
 }
 
 function showLevelUpMessage(level) {
@@ -387,6 +401,7 @@ elements.xpInput.addEventListener("input", handleXpInputChange);
 elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
+elements.newSessionButton.addEventListener("click", openSessionComposer);
 elements.sessionNotes.addEventListener("input", handleSessionNotesInput);
 elements.saveSessionButton.addEventListener("click", saveSession);
 elements.sessionList.addEventListener("click", handleSessionListClick);

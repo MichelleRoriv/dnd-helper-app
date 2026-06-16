@@ -24,16 +24,21 @@
     <input type="text" id="xpInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Agregar XP">
     <button id="addXpButton" disabled>Agregar</button>
     <button id="undoXpButton" type="button" disabled>Deshacer</button>
+    <button id="newSessionButton" type="button">Nueva sesion</button>
 
-    <h2>Session Logger</h2>
+    <section id="sessionComposer" class="sessionComposer" hidden>
+      <h2>Nueva sesion</h2>
 
-    <textarea id="sessionNotes" rows="5" placeholder="Notas de la sesion"></textarea>
-    <button id="saveSessionButton" type="button" disabled>Guardar sesion</button>
-    <p id="sessionStatus" class="sessionStatus" aria-live="polite"></p>
+      <textarea id="sessionNotes" rows="5" placeholder="Notas de la sesion"></textarea>
+      <button id="saveSessionButton" type="button" disabled>Guardar sesion</button>
+      <p id="sessionStatus" class="sessionStatus" aria-live="polite"></p>
+    </section>
 
-    <h3>Sesiones guardadas</h3>
-    <ul id="sessionList" class="sessionList"></ul>
-    <pre id="sessionDetail" class="sessionDetail">Selecciona una sesion para ver el contenido completo.</pre>
+    <section class="sessionHistory">
+      <h2>Sesiones guardadas</h2>
+      <ul id="sessionList" class="sessionList"></ul>
+      <pre id="sessionDetail" class="sessionDetail">Selecciona una sesion para ver el contenido completo.</pre>
+    </section>
 
   </div>
 
