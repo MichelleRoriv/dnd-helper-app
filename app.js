@@ -378,6 +378,7 @@ function addXP() {
   saveXpSnapshotForUndo();
 
   character = {
+    ...character,
     xp: newXp,
     level: newLevel
   };
@@ -404,6 +405,7 @@ function undoXP() {
   const restoredXp = xpUndoHistory.pop();
 
   character = {
+    ...character,
     xp: restoredXp,
     level: getLevelFromXp(restoredXp)
   };
@@ -435,8 +437,8 @@ elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
 elements.newSessionButton.addEventListener("click", openSessionComposer);
 elements.characterNameInput.addEventListener("input", handleCharacterProfileInput);
-elements.characterSpeciesInput.addEventListener("input", handleCharacterProfileInput);
-elements.characterClassInput.addEventListener("input", handleCharacterProfileInput);
+elements.characterSpeciesInput.addEventListener("change", handleCharacterProfileInput);
+elements.characterClassInput.addEventListener("change", handleCharacterProfileInput);
 elements.sessionNotes.addEventListener("input", handleSessionNotesInput);
 elements.saveSessionButton.addEventListener("click", saveSession);
 elements.sessionList.addEventListener("click", handleSessionListClick);

@@ -24,7 +24,8 @@ body {
 
   label {
     display: block;
-    margin-top: 10px;
+    margin-top: 14px;
+    margin-bottom: 4px;
     font-weight: bold;
     text-align: left;
   }
@@ -37,15 +38,20 @@ body {
     display: none !important;
   }
   
-  input, textarea, button {
+  input, select, textarea, button {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
     font-size: 16px;
   }
 
+  select {
+  background-color: white;
+  cursor: pointer;
+  }
+
   .characterProfile {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 
   textarea {
@@ -73,8 +79,24 @@ body {
   }
 
   .sessionItem {
-    display: block;
-    text-align: left;
+  display: block;
+  width: 100%;
+  text-align: left;
+
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  padding: 12px;
+  cursor: pointer;
+
+  font: inherit;
+
+  transition: background-color 0.2s ease;
+  }
+
+  .sessionItem:hover {
+  background: #f3f4f6;
   }
 
   .sessionDate,
@@ -170,3 +192,18 @@ body {
     transform: translateY(12px);
     visibility: hidden;
   }
+
+  input,
+  select,
+  textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
