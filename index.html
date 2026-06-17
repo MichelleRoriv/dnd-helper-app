@@ -15,39 +15,14 @@
       <h2>Personaje</h2>
 
       <label for="characterNameInput">Nombre</label>
-      <input type="text" id="characterNameInput" placeholder="Nombre del personaje">
+      <input type="text" id="characterNameInput" placeholder="Nombre del personaje" aria-describedby="characterNameError">
+      <p id="characterNameError" class="fieldError" aria-live="polite"></p>
 
       <label for="characterSpeciesInput">Especie</label>
-      <select id="characterSpeciesInput">
-        <option value="">Selecciona una especie</option>
-        <option value="Humano">Humano</option>
-        <option value="Elfo">Elfo</option>
-        <option value="Enano">Enano</option>
-        <option value="Mediano">Mediano</option>
-        <option value="Dracónido">Dracónido</option>
-        <option value="Gnomo">Gnomo</option>
-        <option value="Semielfo">Semielfo</option>
-        <option value="Semiorco">Semiorco</option>
-        <option value="Tiefling">Tiefling</option>
-      </select>
+      <select id="characterSpeciesInput"></select>
 
         <label for="characterClassInput">Clase</label>
-        <select id="characterClassInput">
-          <option value="">Selecciona una clase</option>
-          <option value="Bárbaro">Bárbaro</option>
-          <option value="Bardo">Bardo</option>
-          <option value="Clérigo">Clérigo</option>
-          <option value="Druida">Druida</option>
-          <option value="Guerrero">Guerrero</option>
-          <option value="Monje">Monje</option>
-          <option value="Paladín">Paladín</option>
-          <option value="Explorador">Explorador</option>
-          <option value="Pícaro">Pícaro</option>
-          <option value="Hechicero">Hechicero</option>
-          <option value="Brujo">Brujo</option>
-          <option value="Mago">Mago</option>
-          <option value="Artífice">Artífice</option>
-        </select>
+        <select id="characterClassInput"></select>
     </section>
 
     <h2>XP Tracker</h2>

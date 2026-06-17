@@ -17,6 +17,34 @@ const XP_THRESHOLDS = [
 
 const XP_MAX_TOTAL = XP_THRESHOLDS[XP_THRESHOLDS.length - 1];
 
+const SPECIES_OPTIONS = [
+  "Humano",
+  "Elfo",
+  "Enano",
+  "Mediano",
+  "Dracónido",
+  "Gnomo",
+  "Semielfo",
+  "Semiorco",
+  "Tiefling"
+];
+
+const CLASS_OPTIONS = [
+  "Bárbaro",
+  "Bardo",
+  "Clérigo",
+  "Druida",
+  "Guerrero",
+  "Monje",
+  "Paladín",
+  "Explorador",
+  "Pícaro",
+  "Hechicero",
+  "Brujo",
+  "Mago",
+  "Artífice"
+];
+
 const defaultCharacter = {
   name: "",
   species: "",
@@ -27,6 +55,7 @@ const defaultCharacter = {
 
 const elements = {
   characterNameInput: document.getElementById("characterNameInput"),
+  characterNameError: document.getElementById("characterNameError"),
   characterSpeciesInput: document.getElementById("characterSpeciesInput"),
   characterClassInput: document.getElementById("characterClassInput"),
   xpDisplay: document.getElementById("xpDisplay"),
@@ -53,6 +82,7 @@ let sessions = loadSessions();
 let xpUndoHistory = [];
 let levelUpMessageTimeoutId = null;
 let levelUpMessageClearTimeoutId = null;
+let hasInteractedWithCharacterName = false;
 
 function loadCharacter() {
   const storedCharacter = localStorage.getItem(CHARACTER_STORAGE_KEY);
@@ -63,10 +93,11 @@ function loadCharacter() {
       const xp = normalizeXp(parsedCharacter.xp);
 
       // El nivel se recalcula desde la XP para evitar datos guardados inconsistentes.
+      const normalizedProfile =
+        normalizeCharacterProfile(parsedCharacter);
+
       return {
-        name: normalizeText(parsedCharacter.name),
-        species: normalizeText(parsedCharacter.species),
-        characterClass: normalizeText(parsedCharacter.characterClass),
+        ...normalizedProfile,
         xp,
         level: getLevelFromXp(xp)
       };
@@ -118,6 +149,48 @@ function createSession(notes) {
 
 function normalizeText(value) {
   return typeof value === "string" ? value : "";
+}
+
+function isValidSpecies(species) {
+  return SPECIES_OPTIONS.includes(species);
+}
+
+function isValidCharacterClass(characterClass) {
+  return CLASS_OPTIONS.includes(characterClass);
+}
+
+function normalizeCharacterProfile(characterData) {
+  return {
+    name: normalizeText(characterData.name).trim(),
+    species: isValidSpecies(characterData.species)
+      ? characterData.species
+      : "",
+    characterClass: isValidCharacterClass(characterData.characterClass)
+      ? characterData.characterClass
+      : ""
+  };
+}
+
+function populateSelectOptions(selectElement, options, placeholder) {
+  selectElement.replaceChildren();
+
+  const placeholderOption =
+    document.createElement("option");
+
+  placeholderOption.value = "";
+  placeholderOption.textContent = placeholder;
+
+  selectElement.appendChild(placeholderOption);
+
+  options.forEach((optionValue) => {
+    const option =
+      document.createElement("option");
+
+    option.value = optionValue;
+    option.textContent = optionValue;
+
+    selectElement.appendChild(option);
+  });
 }
 
 function getSessionsSortedByNewest() {
@@ -283,20 +356,42 @@ function updateCharacterProfileInputs() {
   elements.characterClassInput.value = character.characterClass;
 }
 
+function updateCharacterValidation() {
+  if (!hasInteractedWithCharacterName) {
+    elements.characterNameError.textContent = "";
+    return;
+  }
+
+  const isValidName =
+    character.name.trim().length > 0;
+
+  elements.characterNameError.textContent =
+    isValidName
+      ? ""
+      : "El nombre es obligatorio.";
+}
+
 function handleSessionNotesInput() {
   updateSaveSessionButton();
   elements.sessionStatus.textContent = "";
+}
+
+function handleCharacterNameInput() {
+  hasInteractedWithCharacterName = true;
+
+  handleCharacterProfileInput();
 }
 
 function handleCharacterProfileInput() {
   character = {
     ...character,
     name: elements.characterNameInput.value.trim(),
-    species: elements.characterSpeciesInput.value.trim(),
-    characterClass: elements.characterClassInput.value.trim()
+    species: elements.characterSpeciesInput.value,
+    characterClass: elements.characterClassInput.value
   };
 
-  // Los datos basicos se guardan automaticamente para evitar pasos extra.
+  updateCharacterValidation();
+
   saveCharacter();
 }
 
@@ -436,15 +531,27 @@ elements.xpInput.addEventListener("keydown", handleXpInputKeydown);
 elements.addXpButton.addEventListener("click", addXP);
 elements.undoXpButton.addEventListener("click", undoXP);
 elements.newSessionButton.addEventListener("click", openSessionComposer);
-elements.characterNameInput.addEventListener("input", handleCharacterProfileInput);
+elements.characterNameInput.addEventListener("input", handleCharacterNameInput);
 elements.characterSpeciesInput.addEventListener("change", handleCharacterProfileInput);
 elements.characterClassInput.addEventListener("change", handleCharacterProfileInput);
 elements.sessionNotes.addEventListener("input", handleSessionNotesInput);
 elements.saveSessionButton.addEventListener("click", saveSession);
 elements.sessionList.addEventListener("click", handleSessionListClick);
 
-saveCharacter();
+populateSelectOptions(
+  elements.characterSpeciesInput,
+  SPECIES_OPTIONS,
+  "Selecciona una especie"
+);
+
+populateSelectOptions(
+  elements.characterClassInput,
+  CLASS_OPTIONS,
+  "Selecciona una clase"
+);
+
 updateCharacterProfileInputs();
+updateCharacterValidation();
 updateDisplay();
 updateAddXpButton();
 updateSaveSessionButton();
