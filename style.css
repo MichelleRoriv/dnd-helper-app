@@ -215,3 +215,32 @@ body {
   font-size: 12px;
   text-align: left;
 }
+
+.characterSummary {
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.characterSummary h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.summaryLabel {
+  font-weight: bold;
+}
+
+.summaryValue {
+  text-align: right;
+  word-break: break-word;
+}

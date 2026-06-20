@@ -72,7 +72,11 @@ const elements = {
   saveSessionButton: document.getElementById("saveSessionButton"),
   sessionStatus: document.getElementById("sessionStatus"),
   sessionList: document.getElementById("sessionList"),
-  sessionDetail: document.getElementById("sessionDetail")
+  sessionDetail: document.getElementById("sessionDetail"),
+  summaryName: document.getElementById("summaryName"),
+  summarySpecies: document.getElementById("summarySpecies"),
+  summaryClass: document.getElementById("summaryClass"),
+  summaryLevel: document.getElementById("summaryLevel")
 };
 
 // Estado principal en memoria. Cada cambio relevante se guarda en localStorage.
@@ -306,6 +310,7 @@ function updateDisplay() {
   elements.progressFill.style.width = `${progressPercent}%`;
   updateUndoButton();
   updateAddXpButton();
+  renderCharacterSummary();
 }
 
 function updateUndoButton() {
@@ -356,6 +361,36 @@ function updateCharacterProfileInputs() {
   elements.characterClassInput.value = character.characterClass;
 }
 
+function getCharacterSummary() {
+  return {
+    name:
+      character.name.trim().length > 0
+        ? character.name
+        : "Sin nombre",
+
+    species:
+      character.species.trim().length > 0
+        ? character.species
+        : "No definida",
+
+    characterClass:
+      character.characterClass.trim().length > 0
+        ? character.characterClass
+        : "No definida",
+
+    level: character.level
+  };
+}
+
+function renderCharacterSummary() {
+  const summary = getCharacterSummary();
+
+  elements.summaryName.textContent = summary.name;
+  elements.summarySpecies.textContent = summary.species;
+  elements.summaryClass.textContent = summary.characterClass;
+  elements.summaryLevel.textContent = String(summary.level);
+}
+
 function updateCharacterValidation() {
   if (!hasInteractedWithCharacterName) {
     elements.characterNameError.textContent = "";
@@ -393,6 +428,8 @@ function handleCharacterProfileInput() {
   updateCharacterValidation();
 
   saveCharacter();
+
+  renderCharacterSummary();
 }
 
 function openSessionComposer() {
@@ -480,6 +517,7 @@ function addXP() {
 
   saveCharacter();
   updateDisplay();
+
 
   // El mensaje solo aparece cuando la nueva XP cruza al menos un umbral de nivel.
   if (newLevel > previousLevel) {

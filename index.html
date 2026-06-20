@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DND Helper</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <div class="container">
@@ -15,14 +17,38 @@
       <h2>Personaje</h2>
 
       <label for="characterNameInput">Nombre</label>
-      <input type="text" id="characterNameInput" placeholder="Nombre del personaje" aria-describedby="characterNameError">
+      <input type="text" id="characterNameInput" placeholder="Nombre del personaje"
+        aria-describedby="characterNameError">
       <p id="characterNameError" class="fieldError" aria-live="polite"></p>
 
       <label for="characterSpeciesInput">Especie</label>
       <select id="characterSpeciesInput"></select>
 
-        <label for="characterClassInput">Clase</label>
-        <select id="characterClassInput"></select>
+      <label for="characterClassInput">Clase</label>
+      <select id="characterClassInput"></select>
+      <section class="characterSummary">
+        <h3>Ficha resumida</h3>
+
+        <div class="summaryRow">
+          <span class="summaryLabel">Nombre</span>
+          <span id="summaryName" class="summaryValue">Sin nombre</span>
+        </div>
+
+        <div class="summaryRow">
+          <span class="summaryLabel">Especie</span>
+          <span id="summarySpecies" class="summaryValue">No definida</span>
+        </div>
+
+        <div class="summaryRow">
+          <span class="summaryLabel">Clase</span>
+          <span id="summaryClass" class="summaryValue">No definida</span>
+        </div>
+
+        <div class="summaryRow">
+          <span class="summaryLabel">Nivel</span>
+          <span id="summaryLevel" class="summaryValue">1</span>
+        </div>
+      </section>
     </section>
 
     <h2>XP Tracker</h2>
@@ -60,4 +86,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>
